@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import argparse
 
-from config import parse_settings
+from config.config_middleman import norm_boot
 from router.n4 import N4
 
 
@@ -12,8 +12,9 @@ def main(gui: bool = False) -> None:
 
 
 def initialize(gui: bool) -> None:
-    N4.settings = parse_settings(gui)
-    N4.start_server()
+    settings = norm_boot(gui)
+    n4 = N4(gui)
+    n4.start_server(settings)
 
 
 def load_model():

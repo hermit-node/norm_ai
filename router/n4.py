@@ -1,22 +1,30 @@
-"""N4: shared settings and its aiohttp listener."""
 from __future__ import annotations
 
 from aiohttp import web
+from munch import Munch
 
 
 class N4:
-    settings: dict = {}
+    settings = Munch()
+    def __init__(self, gui: bool = True) -> None:
+        self.server = None
+        self.app = self.server
+        self.router = None
 
-    @classmethod
-    def start_server(cls) -> None:
-        async def health(request: web.Request) -> web.Response:
-            return web.json_response({"ok": True})
-
-        app = web.Application()
-        app.router.add_get("/health", health)
+    def start_server(self, settings: dict) -> None:
+        self.settings.fromDict(settings)
+        self.server = web.Application()
+        self.router = self.server.router
+        self.router.add_get("/health", self.health)
         web.run_app(
-            app,
-            host=cls.settings["n4"]["host"],
-            port=cls.settings["n4"]["port"],
+            self.server,
+            host=self.settings.n4.host,
+            port=self.settings.n4.port,
             handle_signals=False,
         )
+
+    async def health(self, request: web.Request) -> web.Response:
+        return web.json_response({"ok": True})
+
+    def stop_server(self) -> None:
+        self.server.close()
